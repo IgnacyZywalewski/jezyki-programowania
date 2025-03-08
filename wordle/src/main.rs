@@ -5,22 +5,22 @@ fn main() {
     let word_length = secret_word.len();
     let max_attempts = 6;
     
-    println!("Welcome to Wordle!");
-    println!("Try to guess the {}-letter word.", word_length);
+    println!("Witaj w Wordle!");
+    println!("Sprobuj zgadnac {} literowe slowo", word_length);
     
     for _ in 0..max_attempts {
         let mut guess = String::new();
-        println!("Enter your guess:");
-        io::stdin().read_line(&mut guess).expect("Failed to read input");
+        println!("Wprowadz slowo:");
+        io::stdin().read_line(&mut guess).expect("Blad odczytu");
         let guess = guess.trim().to_lowercase();
         
         if guess.len() != word_length {
-            println!("Your guess must be {} letters long!", word_length);
+            println!("Twoje slowo musi byc {} literowe!", word_length);
             continue;
         }
         
         if guess == secret_word {
-            println!("Congratulations! You've guessed the word: {}", secret_word);
+            println!("Gratulacje zgadles: {}", secret_word);
             return;
         }
         
@@ -41,5 +41,5 @@ fn main() {
         println!();
     }
     
-    println!("Game over! The word was: {}", secret_word);
+    println!("Koniec gry! Haslo to: {}", secret_word);
 }
