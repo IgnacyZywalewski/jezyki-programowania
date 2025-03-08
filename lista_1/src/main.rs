@@ -78,7 +78,7 @@ fn guessing_game() {
         println!("Twoja liczba {guess}");
 
         match guess.cmp(&secret_number) {
-            Ordering::Less => println!("Za malal!"),
+            Ordering::Less => println!("Za mala!"),
             Ordering::Greater => println!("Za duza!"),
             Ordering::Equal => {
                 println!("Zgadles!");
