@@ -25,17 +25,15 @@ fn main() {
         }
         
         for (i, c) in guess.chars().enumerate() {
-            if let Some(secret_char) = secret_word.chars().nth(i) {
-
-                if c == secret_char {
-                    print!("[{}]", c);
-                }
-                else if secret_word.contains(c){
-                    print!("({})", c);
-                }
-                else{
-                    print!(" {} ", c);
-                }
+            let secret_char = secret_word.chars().nth(i).unwrap();
+            if c == secret_char {
+                print!("[{}]", c);
+            } 
+            else if secret_word.contains(c) {
+                print!("({})", c);
+            } 
+            else {
+                print!(" {} ", c);
             }
         }
         println!();
