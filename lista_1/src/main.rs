@@ -94,7 +94,7 @@ fn sum(t: &[i32]) -> i32{
     t.iter().sum()
 }
 
-fn max_ascend(t: &[i32])->&[i32]{
+fn max_ascend(t: &[i32]) -> &[i32]{
     if t.is_empty(){
         return &[];
     }
