@@ -18,12 +18,6 @@ impl Frac{
         let nwd = Self::nwd(self.0, self.1);
         self.0 /= nwd;
         self.1 /= nwd;
-
-        if self.1 < 0 {
-            self.0 = -self.0;
-            self.1 = -self.1;
-        }
-
         *self
     }
 }
