@@ -5,6 +5,9 @@ use std::f64::consts::PI;
 mod zadanie_5;
 use zadanie_5::Frac;
 
+mod zadanie_6;
+use zadanie_6::Poly;
+
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::error::Error;
@@ -66,7 +69,7 @@ fn save(filename: &str, v: Vec<Fig>) -> Result<(), Box<dyn Error>> {
             Fig::Kolo { r } => format!("Kolo {:.2}\n", r),
             Fig::Prost { a, b } => format!("Prostokat {:.2} {:.2}\n", a, b),
             Fig::Kwadr { a } => format!("Kwadrat {:.2}\n", a),
-            Fig::Romb { a, alfa } => format!("Romb {:.2} {:.2}\n", a, alfa),
+            Fig::Romb { a, alfa } => format!("Romb {:.2} {}\n", a, alfa),
         };
         file.write_all(line.as_bytes())?;
     }
@@ -82,13 +85,12 @@ fn load(filename: &str) -> Result<Vec<Fig>, Box<dyn Error>>{
 
     for line in file.lines(){
         let line = line?;
-        println!("Debug: Odczytana linia -> {}", line);
         let parts: Vec<&str> = line.split_whitespace().collect();
 
         let fig = match parts[..] {
             ["Kolo", r] => Fig::Kolo { r: r.parse()? },
-            ["Prost", a, b] => Fig::Prost { a: a.parse()?, b: b.parse()? },
-            ["Kwadr", a] => Fig::Kwadr { a: a.parse()? },
+            ["Prostokat", a, b] => Fig::Prost { a: a.parse()?, b: b.parse()? },
+            ["Kwadrat", a] => Fig::Kwadr { a: a.parse()? },
             ["Romb", a, alfa] => Fig::Romb { a: a.parse()?, alfa: alfa.parse()? },
             _ => return Err("Niepoprawny format danych".into()),
         };
@@ -98,6 +100,14 @@ fn load(filename: &str) -> Result<Vec<Fig>, Box<dyn Error>>{
 
     Ok(figures)
 }
+
+
+fn print_vector(vec: &Vec<Fig>){
+    for fig in vec{
+        println!("{}", fig);
+    }
+}
+
 
 fn main() {
     //Zadanie 1
@@ -114,31 +124,65 @@ fn main() {
         println!("Po obrocie {:.2}\n", f);
     }
 
-    //Zadanie 2
-    for f in &figury {
-        println!("{}", f);
-    }
-
     //Zadanie 3
     match save("Figury.txt", figury.clone()) {
-        Ok(_) => println!("Dane zapisane poprawnie!"),
-        Err(e) => eprintln!("Blad zapisu: {}", e),
+        Ok(_) => println!("\nDane zapisane poprawnie!"),
+        Err(e) => eprintln!("\nBlad zapisu: {}", e),
     }
-    /*
-    let figury1 = match load("Figury.txt") {
-        Ok(figury1) => figury1,
+    let figury_load = match load("Figury.txt") {
+        Ok(figury_load) => {
+            println!("Danye odczytane poprawnie!:");
+            print_vector(&figury_load);
+            figury_load
+        }
         Err(e) => {
             eprintln!("Blad podczas wczytywania pliku: {}", e);
             return;
         }
     };
-    assert_eq!(figury, figury1);*/
+
+    assert_eq!(figury, figury_load);
+    println!("Wektory sa identyczne\n");
+
 
     //Zadanie 5
     let a = Frac(2, 3); 
     let b = Frac(2, 4); 
     let c = Frac(2, 3); 
     let mut d = (a + b - c) * b / c;
-    println!("Wynik: {:?}", d.uprosc());
+    println!("Ulamki a = {:?}, b = {:?}, c = {:?}", a, b, c);
+    println!("Wynik dzialania (a + b - c) * b / c = {:?}\n", d.uprosc());
+
+
+    //Zadanie 6
+    let w1 = Poly { a: vec![1.0, 2.0, 3.0] };
+    let w2 = Poly { a: vec![0.0, 1.0, 2.0] };
+
+    println!("Wielomian w1 = {}", w1);
+    println!("Wielomian w2 = {}\n", w2);
+
+    let wartosc = w1.eval(2.0);
+    println!("w1(2) = {:.2}\n", wartosc);
+
+    let suma = w1.clone() + w2.clone();
+    let suma_1 = w1.clone() + 5.0;
+    let suma_2 = 5.0 + w1.clone();
+    println!("w1 + w2 = {}", suma);
+    println!("w1 + 5 = {}", suma_1);
+    println!("5 + w1 = {}\n", suma_2);
+
+    let roznica = w1.clone() - w2.clone();
+    let roznica_1 = w1.clone() - 5.0;
+    let roznica_2 = 5.0 - w1.clone();
+    println!("w1 - w2 = {}", roznica);
+    println!("w1 - 5 = {}", roznica_1);
+    println!("5 - w1 = {}\n", roznica_2);
+
+    let iloczyn = w1.clone() * w2.clone();
+    let iloczyn_1 = w1.clone() * 2.0;
+    let iloczyn_2 = 2.0 * w1.clone();
+    println!("w1 * w2 = {}", iloczyn);
+    println!("w1 * 2 = {}", iloczyn_1);
+    println!("2 * w1 = {}", iloczyn_2);
     
 }

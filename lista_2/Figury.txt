@@ -1,4 +1,4 @@
 Kolo 1.50
 Prostokat 2.00 1.00
 Kwadrat 5.00
-Romb 3.00 2.09
+Romb 3.00 2.0943951023931957
