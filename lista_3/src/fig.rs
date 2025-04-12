@@ -2,6 +2,7 @@ use std::f64::consts::PI;
 use std::fmt;
 use serde::{Serialize, Deserialize};
 
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Fig {
     Kolo { r: f64 },
@@ -13,6 +14,7 @@ pub enum Fig {
 pub trait Figura {
     fn pole(&self) -> f64;
     fn obwod(&self) -> f64;
+    //fn paint(&self) -> Shape;
 }
 
 impl Figura for Fig {
@@ -33,6 +35,25 @@ impl Figura for Fig {
             Fig::Romb { a, alfa } => a * a * alfa.sin(),
         }
     }
+
+    /*
+    fn paint(&self) -> Shape {
+        match self {
+            Fig::Kolo { r } => {
+                Shape::circle(*r)
+            },
+            Fig::Prost { a, b } => {
+                Shape::rect(*a, *b)
+            },
+            Fig::Kwadr { a } => {
+                Shape::rect(*a, *a)
+            },
+            Fig::Romb { a, alfa } => {
+                let height = a * alfa.sin();
+                Shape::rect(*a, height)
+            },
+        }
+    }*/
 }
 
 
