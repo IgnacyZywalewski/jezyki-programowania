@@ -15,6 +15,10 @@ use std::fs::File;
 use std::io::{Result, ErrorKind, Error};
 use serde_json;
 
+use flo_draw::*;
+use flo_draw::canvas::*;
+
+
 
 fn print_osoby(osoby: &Vec<Osoba>){
 	for osoba in osoby {
@@ -124,13 +128,12 @@ fn main() {
 
 
 	//Zadanie 2
-	/*
 	let n = 1_000_000;
 	let digit = 10_000;
 	let fib_number = fibonacci(n);
-    let fib_str = fib_number.to_string
+    let fib_str = fib_number.to_string();
 	let result = fib_str.chars().nth(digit - 1).unwrap();
-    println!("{}-ta cyfra liczby Fibonacciego dla n = {} to: {}\n", digit, n, result);*/
+    println!("{}-ta cyfra liczby Fibonacciego dla n = {} to: {}\n", digit, n, result);
 
 
 	//Zadanie 3
@@ -167,8 +170,8 @@ fn main() {
 	//e)
 	let figury: Vec<Fig> = vec![
         Fig::Kolo { r: 1.5 },
-        Fig::Prost { a: 1.0, b: 2.0 },
-        Fig::Kwadr { a: 5.0 },
+        Fig::Prost { a: 3.0, b: 2.0 },
+        Fig::Kwadr { a: 4.0 },
         Fig::Romb { a: 3.0, alfa: PI / 3.0 },
     ];
 	print_figury(&figury);
@@ -186,22 +189,29 @@ fn main() {
         Ok(loaded_figury) => {
             println!("Zaladowane figury:");
             for figura in loaded_figury {
-                println!("{} - Pole: {}, Obwod: {}", figura, figura.pole(), figura.obwod());
+                println!("{} - Pole: {:.3}, Obwod: {:.3}", figura, figura.pole(), figura.obwod());
             }
         }
         Err(e) => eprintln!("Blad ladowania: {}", e),
     }
 
 	//Zadanie 6
-	/*
-	let mut drawing = Draw::new();
+	with_2d_graphics(move || {
+		let canvas = create_canvas_window("Figury");
 
-    for figura in figury.iter() {
-        let shape = figura.paint();
-        drawing.add_shape(shape);
-    }
+		let figury = figury.clone();
 
-    drawing.set_color(Color::new(0.0, 0.0, 1.0));
-    drawing.render();*/
+		canvas.draw(move |gc| {
+			gc.clear_canvas(Color::Rgba(1.0, 1.0, 1.0, 1.0));
+			gc.canvas_height(600.0);
+			gc.center_region(0.0, 0.0, 800.0, 600.0);
+
+			let mut x_offset: f32 = 100.0;
+			for fig in &figury {
+				fig.paint(gc, x_offset, 300.0);
+				x_offset += 200.0;
+			}
+		});
+	});
 
 }

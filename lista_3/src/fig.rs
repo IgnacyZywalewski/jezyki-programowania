@@ -1,6 +1,8 @@
 use std::f64::consts::PI;
 use std::fmt;
 use serde::{Serialize, Deserialize};
+use flo_draw::canvas::{GraphicsContext, Color};
+use flo_draw::canvas::*;
 
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -14,7 +16,7 @@ pub enum Fig {
 pub trait Figura {
     fn pole(&self) -> f64;
     fn obwod(&self) -> f64;
-    //fn paint(&self) -> Shape;
+    fn paint(&self, gc: &mut dyn GraphicsContext, offset_x: f32, offset_y: f32);
 }
 
 impl Figura for Fig {
@@ -36,25 +38,52 @@ impl Figura for Fig {
         }
     }
 
-    /*
-    fn paint(&self) -> Shape {
+    fn paint(&self, gc: &mut dyn GraphicsContext, offset_x: f32, offset_y: f32) {
+        let scale = 30.0;
+        gc.new_path();
         match self {
             Fig::Kolo { r } => {
-                Shape::circle(*r)
-            },
+                gc.circle(offset_x, offset_y, (*r * scale) as f32);
+            }
             Fig::Prost { a, b } => {
-                Shape::rect(*a, *b)
-            },
+                let w = (*a * scale / 2.0) as f32;
+                let h = (*b * scale / 2.0) as f32;
+
+                gc.move_to(offset_x - w, offset_y - h);
+                gc.line_to(offset_x + w, offset_y - h);
+                gc.line_to(offset_x + w, offset_y + h);
+                gc.line_to(offset_x - w, offset_y + h);
+                gc.close_path();
+            }
             Fig::Kwadr { a } => {
-                Shape::rect(*a, *a)
-            },
+                let w = (*a * scale / 2.0) as f32;
+
+                gc.move_to(offset_x - w, offset_y - w);
+                gc.line_to(offset_x + w, offset_y - w);
+                gc.line_to(offset_x + w, offset_y + w);
+                gc.line_to(offset_x - w, offset_y + w);
+                gc.close_path();
+            }
             Fig::Romb { a, alfa } => {
-                let height = a * alfa.sin();
-                Shape::rect(*a, height)
-            },
+            let dx = (*a * scale / 2.0) as f32;
+                let dy = dx * (alfa.to_radians().cos()) as f32;
+
+                gc.move_to(offset_x, offset_y - dy);
+                gc.line_to(offset_x + dx, offset_y);
+                gc.line_to(offset_x, offset_y + dy);
+                gc.line_to(offset_x - dx, offset_y);
+                gc.close_path();
+            }
         }
-    }*/
+
+        gc.fill_color(Color::Rgba(0.3, 0.6, 0.8, 1.0));
+        gc.fill();
+        gc.stroke_color(Color::Rgba(0.0, 0.0, 0.0, 1.0));
+        gc.line_width(2.0);
+        gc.stroke();
+    }
 }
+
 
 
 impl fmt::Display for Fig{
