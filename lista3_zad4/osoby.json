@@ -1,0 +1,23 @@
+[
+  {
+    "imie": "Ignacy",
+    "nazwisko": "Zywalewski",
+    "wzrost": 180,
+    "waga": 68.7,
+    "data_urodzenia": "23-03-2003"
+  },
+  {
+    "imie": "Adam",
+    "nazwisko": "Nowak",
+    "wzrost": 186,
+    "waga": 63.2,
+    "data_urodzenia": "27-09-2006"
+  },
+  {
+    "imie": "Michal",
+    "nazwisko": "Kowalski",
+    "wzrost": 192,
+    "waga": 76.8,
+    "data_urodzenia": "30-05-2001"
+  }
+]
