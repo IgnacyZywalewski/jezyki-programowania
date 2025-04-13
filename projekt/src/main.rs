@@ -1,8 +1,17 @@
 ﻿use flo_canvas::*;
 use flo_draw::*;
-use futures::{executor, StreamExt};
+use flo_draw::binding::*;
+
+use futures::channel::mpsc;
+use futures::executor;
+use futures::stream::StreamExt;
+use futures_timer::Delay;
+use futures::sink::SinkExt;
+
 use rand::Rng;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+
 
 #[derive(Clone, Copy)]
 struct Circle {
@@ -26,80 +35,153 @@ impl Paint for Circle {
     }
 }
 
+fn draw_scene(gc: &mut dyn GraphicsContext, circle: Circle, score: u32, lato: Arc<CanvasFontFace>, width: f32, height: f32, message: &str) {
+    gc.clear_canvas(Color::Rgba(1.0, 1.0, 1.0, 1.0));
+    gc.canvas_height(height);
+    gc.center_region(0.0, 0.0, width, height);
+
+    circle.paint(gc);
+
+    gc.define_font_data(FontId(1), Arc::clone(&lato));
+    gc.fill_color(Color::Rgba(0.0, 0.0, 0.0, 1.0));
+    gc.set_font_size(FontId(1), 32.0);
+
+    // Wynik w prawym górnym rogu
+    let padding = 50.0;
+    gc.begin_line_layout(width - 130.0 - padding, height - padding, TextAlignment::Left);
+    gc.layout_text(FontId(1), format!("Wynik = {}", score));
+    gc.draw_text_layout();
+
+    // Napis lub timer na górze środka
+    gc.begin_line_layout(width / 2.0, height - 50.0, TextAlignment::Center);
+    gc.layout_text(FontId(1), message.to_string());
+    gc.draw_text_layout();
+}
+
+
 fn main() {
-    let window_width = 800.0;
-    let window_height = 600.0;
-    let radius = 50.0;
+    let window_width = 1366.0;
+    let window_height = 768.0;
+    let radius = 40.0;
+    let lato = CanvasFontFace::from_slice(include_bytes!("Lato-Regular.ttf"));
 
-    let mut rng = rand::thread_rng();
-    let random_x = rng.gen_range(radius..window_width - radius);
-    let random_y = rng.gen_range(radius..window_height - radius);
+    with_2d_graphics(move || {
+        let lato = lato;
 
-    let circle = Arc::new(Mutex::new(Circle {
-        x: random_x,
-        y: random_y,
-        r: radius,
-    }));
+        let mut window_properties = WindowProperties::from(&"Projekt");
+        window_properties.fullscreen = BindRef::from(bind(true));
+        window_properties.size = BindRef::from(bind((window_width as u64, window_height as u64)));
 
-    with_2d_graphics({
-        let circle = Arc::clone(&circle);
-        move || {
-            let window_properties = WindowProperties::from(&"Projekt");
-            let (canvas, events) = create_drawing_window_with_events(window_properties);
+        let (canvas, events) = create_drawing_window_with_events(window_properties);
 
-             {
-                let circle_data = {
-                    let circle = circle.lock().unwrap();
-                    *circle
-                };
+        let mut rng = rand::thread_rng();
 
-                canvas.draw(move |gc| {
-                    gc.clear_canvas(Color::Rgba(1.0, 1.0, 1.0, 1.0));
-                    gc.canvas_height(1000.0);
-                    gc.center_region(0.0, 0.0, 1000.0, 1000.0);
-                    circle_data.paint(gc);
-                });
+        let mut current_circle = Circle {
+            x: window_width / 2.0,
+            y: window_height / 2.0,
+            r: radius,
+        };
+
+        let mut score = 0;
+        let mut game_started = false;
+        let mut game_over = false;
+        let mut end_time = Instant::now();
+
+        let mut message = String::from("Kliknij w kółko");
+
+        canvas.draw({
+            let circle = current_circle;
+            let score = score;
+            let lato = Arc::clone(&lato);
+            let message = message.clone();
+
+            move |gc| {
+                draw_scene(gc, circle, score, lato, window_width, window_height, &message);
             }
+        });
 
+        executor::block_on(async move {
+            let (mut timer_tx, timer_rx) = mpsc::channel::<()>(10);
 
-            executor::block_on(async move {
-                let mut events = events;
-                let mut rng = rand::thread_rng();
+            let mut timer_rx = timer_rx.fuse();
+            let mut events = events.fuse();
 
-                while let Some(evt) = events.next().await {
-                    match evt {
-                        DrawEvent::Pointer(PointerAction::ButtonDown, _, state) => {
-                            let (mouse_x, mouse_y) = state.location_in_canvas.unwrap_or((0.0, 0.0));
-                            let mouse_x = mouse_x as f32;
-                            let mouse_y = mouse_y as f32;
+            let _ = std::thread::spawn(move || {
+                let mut runtime = executor::LocalPool::new();
+                runtime.run_until(async move {
+                    loop {
+                        Delay::new(Duration::from_secs(1)).await;
+                        let _ = timer_tx.send(()).await;
+                    }
+                });
+            });
 
-                            let mut circle_guard = circle.lock().unwrap();
+            loop {
+                futures::select! {
+                    evt = events.next() => {
+                        if let Some(evt) = evt {
+                            match evt {
+                                DrawEvent::Pointer(PointerAction::ButtonDown, _, state) => {
+                                    if game_over { continue; }
 
-                            let distance = ((mouse_x - circle_guard.x).powi(2)
-                                + (mouse_y - circle_guard.y).powi(2))
-                                .sqrt();
+                                    let (mouse_x, mouse_y) = state.location_in_canvas.unwrap_or((0.0, 0.0));
 
-                            if distance <= circle_guard.r {
-                                println!("Kliknięto w koło!");
+                                    let mouse_x = mouse_x as f32;
+                                    let mouse_y = mouse_y as f32;
 
-                                circle_guard.x = rng.gen_range(radius..window_width - radius);
-                                circle_guard.y = rng.gen_range(radius..window_height - radius);
+                                    let distance = ((mouse_x - current_circle.x).powi(2) + (mouse_y - current_circle.y).powi(2)).sqrt();
 
-                                let circle_copy = *circle_guard;
+                                    if distance <= current_circle.r {
+                                        if !game_started {
+                                            game_started = true;
+                                            end_time = Instant::now() + Duration::from_secs(60);
+                                        }
 
-                                canvas.draw(move |gc| {
-                                    gc.clear_canvas(Color::Rgba(1.0, 1.0, 1.0, 1.0));
-                                    gc.canvas_height(1000.0);
-                                    gc.center_region(0.0, 0.0, 1000.0, 1000.0);
-                                    circle_copy.paint(gc);
-                                });
+                                        score += 1;
+                                        current_circle = Circle {
+                                            x: rng.gen_range(radius..window_width - radius),
+                                            y: rng.gen_range(radius..window_height - radius),
+                                            r: radius,
+                                        };
+                                    }
+
+                                    let circle = current_circle;
+                                    let score = score;
+                                    let lato = Arc::clone(&lato);
+                                    let message = message.clone();
+                                    canvas.draw(move |gc| draw_scene(gc, circle, score, lato, window_width, window_height, &message));
+                                }
+
+                                DrawEvent::KeyDown(_, Some(Key::KeyEscape)) => {
+                                    println!("Zamykam aplikację...");
+                                    std::process::exit(0);
+                                }
+
+                                _ => {}
+                            }
+                        }
+                    },
+
+                    _ = timer_rx.next() => {
+                        if game_started && !game_over {
+                            let remaining = end_time.saturating_duration_since(Instant::now());
+
+                            if remaining == Duration::ZERO {
+                                game_over = true;
+                                message = "Koniec gry".to_string();
+                            } else {
+                                message = format!("Pozostalo: {}:{:02}", remaining.as_secs() / 60, remaining.as_secs() % 60);
                             }
 
+                            let circle = current_circle;
+                            let score = score;
+                            let lato = Arc::clone(&lato);
+                            let message = message.clone();
+                            canvas.draw(move |gc| draw_scene(gc, circle, score, lato, window_width, window_height, &message));
                         }
-                        _ => {}
                     }
                 }
-            });
-        }
+            }
+        });
     });
 }
