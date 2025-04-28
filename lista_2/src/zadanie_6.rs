@@ -106,9 +106,16 @@ impl Sub<Poly> for f32 {
 	type Output = Poly;
 
 	fn sub(self, poly: Poly) -> Poly {
-		poly - self
+		let mut result: Vec<f32> = poly.a.iter().map(|&c| -c).collect();
+		if result.is_empty() {
+			result.push(self);
+		} else {
+			result[0] += self;
+		}
+		Poly { a: result }
 	}
 }
+
 
 
 //Mnozenie

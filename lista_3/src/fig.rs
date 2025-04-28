@@ -65,7 +65,7 @@ impl Figura for Fig {
                 gc.close_path();
             }
             Fig::Romb { a, alfa } => {
-            let dx = (*a * scale / 2.0) as f32;
+                let dx = (*a * scale / 2.0) as f32;
                 let dy = dx * (alfa.to_radians().cos()) as f32;
 
                 gc.move_to(offset_x, offset_y - dy);

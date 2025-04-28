@@ -11,42 +11,43 @@ fn policz(tab: &Vec<i32>) -> (i32, i32) {
             ujemne += 1;
         }
     }
-    (dodatnie, ujemne)   
+    (dodatnie, ujemne)
 }
 
 //Zadanie 13
-    enum Trojmian{
-        Ogolna { a: f64, b: f64, c: f64},
-        Kanoniczna { a: f64, p: f64, q: f64},
-        Iloczynowa { a: f64, x1: f64, x2: f64},
+enum Trojmian{
+    Ogolna { a: f64, b: f64, c: f64},
+    Kanoniczna { a: f64, p: f64, q: f64},
+    Iloczynowa { a: f64, x1: f64, x2: f64},
+}
+
+
+impl Trojmian {
+    fn eval(&self, x: f64) -> f64 {
+        match self {
+            Trojmian::Ogolna { a, b, c } => a * x * x + b * x + c,
+            Trojmian::Kanoniczna { a, p, q } => a * (x - p).powi(2) + q,
+            Trojmian::Iloczynowa { a, x1, x2 } => a * (x - x1) * (x - x2),
+        }
     }
 
-    impl Trojmian {
-        fn eval(&self, x: f64) -> f64 {
-            match self {
-                Trojmian::Ogólna { a, b, c } => a * x * x + b * x + c,
-                Trojmian::Kanoniczna { a, p, q } => a * (x - p).powi(2) + q,
-                Trojmian::Iloczynowa { a, x1, x2 } => a * (x - x1) * (x - x2),
+    fn na_ogolna(&self) -> Trojmian {
+        match *self {
+            Trojmian::Ogolna { a, b, c } => Trojmian::Ogolna { a, b, c },
+            Trojmian::Kanoniczna { a, p, q } => {
+                let b = -2.0 * a * p;
+                let c = a * p * p + q;
+                Trojmian::Ogolna { a, b, c }
+            }
+            Trojmian::Iloczynowa { a, x1, x2 } => {
+                let b = -a * (x1 + x2);
+                let c = a * x1 * x2;
+                Trojmian::Ogolna { a, b, c }
             }
         }
-
-        fn na_ogolna(&self) -> Trójmian {
-            match *self {
-                Trojmian::Ogolna { a, b, c } => Trojmian::Ogolna { a, b, c },
-                Trojmian::Kanoniczna { a, p, q } => {
-                    let b = -2.0 * a * p;
-                    let c = a * p * p + q;
-                    Trójmian::Ogólna { a, b, c }
-                }
-                Trojmian::Iloczynowa { a, x1, x2 } => {
-                    let b = -a * (x1 + x2);
-                    let c = a * x1 * x2;
-                    Trojmian::Ogolna { a, b, c }
-                }
-            }
-        }
+    }
     
-    }
+}
 
 
 fn main() {
@@ -154,8 +155,7 @@ fn main() {
     //Zadanie 12
     let t = Trojkat { a: 3.0, b: 4.0, c: 5.0};
     let Trojkat{a, b, c} = t;
-    let mut boki = vec![a, b, c];
-    boki.sort();
-    println!("Czy mozna zbudowac trojkat {}", boki[0] + boki[1] > boki[2]);
+    let boki: Vec<f64> = vec![a, b, c];
+    println!("Czy mozna zbudowac trojkat {}", boki[0] + boki[1] > boki[2] && boki[0] + boki[2] > boki[1] && boki[2] + boki[1] > boki[0]);
 
 }

@@ -19,7 +19,6 @@ use flo_draw::*;
 use flo_draw::canvas::*;
 
 
-
 fn print_osoby(osoby: &Vec<Osoba>){
 	for osoba in osoby {
 		println!(
@@ -85,7 +84,7 @@ fn age_range(osoby: &Vec<Osoba>, l: u32, p: u32) -> Vec<Osoba> {
 
 fn weigth(osoby: &Vec<Osoba>) -> (f64, f64) {
 	let laczna_waga: f64 = osoby.iter().map(|osoba| osoba.waga).sum();
-	let srednia_waga: f64 = if !osoby.is_empty() { laczna_waga / osoby.len() as f64 } else {0.0};
+	let srednia_waga: f64 = if !osoby.is_empty() { laczna_waga / osoby.len() as f64 } else { 0.0 };
 
 	(laczna_waga, srednia_waga)
 }
@@ -94,7 +93,7 @@ fn sum_and_avarage<T>(figury: &Vec<Fig>, f: T) -> (f64, f64)
 where 
 	T: Fn(&Fig) -> f64,
 {
-	let suma: f64 = figury.iter().map(|fig| f(fig)).sum();
+	let suma: f64 = figury.iter().map(f).sum();
 	let srednia = if !figury.is_empty() { suma / figury.len() as f64 } else { 0.0 };
 
 	(suma, srednia)
@@ -128,12 +127,13 @@ fn main() {
 
 
 	//Zadanie 2
+	/*
 	let n = 1_000_000;
 	let digit = 10_000;
 	let fib_number = fibonacci(n);
     let fib_str = fib_number.to_string();
 	let result = fib_str.chars().nth(digit - 1).unwrap();
-    println!("{}-ta cyfra liczby Fibonacciego dla n = {} to: {}\n", digit, n, result);
+    println!("{}-ta cyfra liczby Fibonacciego dla n = {} to: {}\n", digit, n, result);*/
 
 
 	//Zadanie 3

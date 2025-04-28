@@ -27,7 +27,8 @@ fn load(path: &str) -> Vec<Osoba> {
         let file = File::open(path).expect("Nie mozna otworzyc pliku.");
         let reader = BufReader::new(file);
         serde_json::from_reader(reader).unwrap_or_else(|_| vec![])
-    } else {
+    } 
+    else {
         vec![]
     }
 }
@@ -113,7 +114,8 @@ fn main() {
 
                 if before == after {
                     println!("Nie znaleziono osoby o podanym nazwisku");
-                } else {
+                } 
+                else {
                     println!("Usunieto osobe");
                     save(path, &osoby);
                 }
@@ -132,7 +134,8 @@ fn main() {
 
                 if znalezione.is_empty() {
                     println!("Brak pasujacych osob");
-                } else {
+                } 
+                else {
                     for osoba in znalezione {
                         println!(
                             "{} {} | Wzrost: {} cm | Waga: {} kg | Data urodzenia: {}",

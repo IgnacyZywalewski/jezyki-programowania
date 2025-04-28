@@ -16,6 +16,7 @@ use std::fs;
 use serde::{Deserialize, Serialize};
 
 
+//Kolo
 #[derive(Clone, Copy)]
 struct Circle {
     x: f32,
@@ -63,6 +64,8 @@ fn draw_scene(gc: &mut dyn GraphicsContext, circle: Circle, score: u32, lato: Ar
     gc.draw_text_layout();
 }
 
+
+//Poziom trudnosci
 enum Difficulty {
     Easy,
     Medium,
@@ -100,6 +103,8 @@ fn select_difficulty() -> Difficulty {
     }
 }
 
+
+//Wyniki
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 struct HighScores {
     easy: u32,
@@ -290,7 +295,7 @@ fn main() {
 
                     _ = anim_timer_rx.next() => {
                         if (current_circle.x + current_circle.r) < window_width && (current_circle.x - current_circle.r) > 0.0 
-                         && (current_circle.y + current_circle.r) < window_height && (current_circle.y - current_circle.r) > 0.0 {
+                            && (current_circle.y + current_circle.r) < window_height && (current_circle.y - current_circle.r) > 0.0 {
 
                             current_circle.x += current_circle.dx as f32;
                             current_circle.y += current_circle.dy as f32;
@@ -302,7 +307,6 @@ fn main() {
                         let message = message.clone();
                         canvas.draw(move |gc| draw_scene(gc, circle, score, lato, window_width, window_height, &message));
                     }
-
 
                 }
             }

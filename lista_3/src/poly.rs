@@ -11,23 +11,23 @@ impl Poly{
 	where
 		T: Clone
 			+ Add<Output = T>
+			+ Add<f32, Output = T>
             + Sub<Output = T>
+			+ Sub<f32, Output = T>
             + Mul<Output = T>
-            + Mul<f32, Output = T>
-            + Add<f32, Output = T>
-            + Sub<f32, Output = T>,
+            + Mul<f32, Output = T>,
 	{
 		let mut result = x.clone() * 0.0;
 		let mut power = x.clone();
-		let mut iter = self.a.iter();
 
-		if let Some(&first_coef) = iter.next() {
-			result = result + first_coef;
-		}
-		
-		for &coef in iter {
-			result = result + (power.clone() * coef);
-			power = power * x.clone();
+		for (i, &a) in self.a.iter().enumerate() {
+			if i == 0 {
+				result = result + a;
+			} 
+			else {
+				result = result + (power.clone() * a);
+				power = power * x.clone();
+			}
 		}
 		result
 	}
@@ -120,9 +120,17 @@ impl Sub<Poly> for f32 {
 	type Output = Poly;
 
 	fn sub(self, poly: Poly) -> Poly {
-		poly - self
+		let mut result: Vec<f32> = poly.a.iter().map(|&c| -c).collect();
+		if result.is_empty() {
+			result.push(self);
+		} 
+		else {
+			result[0] += self;
+		}
+		Poly { a: result }
 	}
 }
+
 
 
 //Mnozenie
@@ -170,12 +178,12 @@ impl fmt::Display for Poly{
     fn fmt (&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut result = String::new();
 
-		for (i, &coef) in self.a.iter().enumerate() {
-			if coef != 0.0 {
+		for (i, &a) in self.a.iter().enumerate() {
+			if a != 0.0 {
 				if !result.is_empty() {
 					result.push_str(" + ");
 				}
-				result.push_str(&format!("{:.2}", coef));
+				result.push_str(&format!("{:.2}", a));
 			}
 			if i > 0 {
 				result.push_str(&format!("x^{}", i));
